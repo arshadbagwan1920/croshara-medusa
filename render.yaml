@@ -1,0 +1,36 @@
+databases:
+  - name: croshara-postgres
+    plan: free
+    region: singapore
+    ipAllowList: []
+
+services:
+  - type: web
+    name: croshara-medusa
+    plan: free
+    region: singapore
+    env: node
+    branch: main
+    buildCommand: npm run build
+    preDeployCommand: npm run predeploy
+    startCommand: npm run start
+    healthCheckPath: /health
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: croshara-postgres
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: COOKIE_SECRET
+        generateValue: true
+      - key: STORE_CORS
+        value: http://localhost:8000
+      - key: ADMIN_CORS
+        value: /https?:\/\/.*croshara-medusa\.onrender\.com/
+      - key: AUTH_CORS
+        value: /https?:\/\/.*croshara-medusa\.onrender\.com/
+      - key: MEDUSA_BACKEND_URL
+        value: https://croshara-medusa.onrender.com
+      - key: NODE_ENV
+        value: production
