@@ -11,7 +11,7 @@ services:
     region: singapore
     env: node
     branch: main
-    buildCommand: npm run build
+    buildCommand: ./build.sh
     startCommand: npm run start
     healthCheckPath: /health
     envVars:
