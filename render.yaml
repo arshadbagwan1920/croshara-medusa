@@ -12,7 +12,6 @@ services:
     env: node
     branch: main
     buildCommand: npm run build
-    preDeployCommand: npm run predeploy
     startCommand: npm run start
     healthCheckPath: /health
     envVars:
