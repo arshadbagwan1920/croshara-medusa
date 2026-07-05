@@ -1,6 +1,6 @@
-import { defineConfig } from "@medusajs/framework/utils"
+const { defineConfig } = require("@medusajs/framework/utils")
 
-export default defineConfig({
+module.exports = defineConfig({
   projectConfig: {
     databaseUrl: process.env.DATABASE_URL,
     http: {
