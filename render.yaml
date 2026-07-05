@@ -1,0 +1,30 @@
+services:
+  - type: web
+    name: croshara-medusa
+    runtime: node
+    repo: https://github.com/arshadbagwan1920/croshara-medusa
+    plan: free
+    buildCommand: cd apps/backend && chmod +x build.sh && ./build.sh
+    startCommand: cd apps/backend && node node_modules/@medusajs/cli/cli.js start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: croshara-medusa-db
+          property: connectionString
+      - key: STORE_CORS
+        value: http://localhost:8000,http://localhost:9000
+      - key: ADMIN_CORS
+        value: http://localhost:5173,http://localhost:9000
+      - key: AUTH_CORS
+        value: http://localhost:5173,http://localhost:9000
+      - key: JWT_SECRET
+        generateValue: true
+      - key: COOKIE_SECRET
+        generateValue: true
+
+databases:
+  - name: croshara-medusa-db
+    plan: free
+    region: oregon
