@@ -4,7 +4,7 @@
   "description": "CROSHARA – Medusa e-commerce backend",
   "scripts": {
     "dev": "medusa develop",
-    "build": "medusa build",
+    "build": "npx --yes @medusajs/cli build",
     "start": "medusa start",
     "seed": "medusa exec src/scripts/seed.ts",
     "predeploy": "medusa db:migrate"
