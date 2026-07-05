@@ -11,7 +11,7 @@ services:
     region: singapore
     env: node
     branch: main
-    buildCommand: npm install --include=dev && npm run build
+    buildCommand: npm install @medusajs/cli@2.17.2 && node node_modules/@medusajs/cli/cli.js build
     startCommand: npm run start
     healthCheckPath: /health
     envVars:
