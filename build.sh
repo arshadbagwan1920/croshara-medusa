@@ -13,10 +13,15 @@ printf '%s\n' 'module.exports = {}' > node_modules/@medusajs/draft-order/.medusa
 
 node node_modules/@medusajs/cli/cli.js build
 
-# Debug: list admin build artifacts after build
-echo "=== Build artifacts ==="
-find .medusa -type f 2>/dev/null | head -30 || echo "(no .medusa dir)"
-find build -type f 2>/dev/null | head -30 || echo "(no build dir)"
-echo "=== End ==="
+# Admin build goes to .medusa/server/public/admin/ but server looks in public/admin/
+mkdir -p public/admin
+if [ -d .medusa/server/public/admin ]; then
+  cp -r .medusa/server/public/admin/* public/admin/
+  echo "=== Copied admin build to public/admin/ ==="
+else
+  echo "=== WARNING: no admin build found at .medusa/server/public/admin ==="
+  # Create a minimal index.html so server doesn't crash
+  echo '<!DOCTYPE html><html><body>Admin loading...</body></html>' > public/admin/index.html
+fi
 
 node node_modules/@medusajs/cli/cli.js db:migrate

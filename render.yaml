@@ -31,7 +31,5 @@ services:
         value: /https?:\/\/.*croshara-medusa\.onrender\.com/
       - key: MEDUSA_BACKEND_URL
         value: https://croshara-medusa.onrender.com
-      - key: DISABLE_MEDUSA_ADMIN
-        value: "true"
       - key: NODE_ENV
         value: production
