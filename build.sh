@@ -28,3 +28,4 @@ node node_modules/@medusajs/cli/cli.js db:migrate
 
 node node_modules/@medusajs/cli/cli.js exec src/scripts/seed.ts
 node node_modules/@medusajs/cli/cli.js exec src/scripts/create-admin.ts
+node node_modules/@medusajs/cli/cli.js exec src/scripts/create-api-key.ts
