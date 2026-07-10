@@ -13,4 +13,10 @@ printf '%s\n' 'module.exports = {}' > node_modules/@medusajs/draft-order/.medusa
 
 node node_modules/@medusajs/cli/cli.js build
 
+# Debug: list admin build artifacts after build
+echo "=== Build artifacts ==="
+find .medusa -type f 2>/dev/null | head -30 || echo "(no .medusa dir)"
+find build -type f 2>/dev/null | head -30 || echo "(no build dir)"
+echo "=== End ==="
+
 node node_modules/@medusajs/cli/cli.js db:migrate
