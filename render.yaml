@@ -24,7 +24,7 @@ services:
       - key: COOKIE_SECRET
         generateValue: true
       - key: STORE_CORS
-        value: http://localhost:8000
+        value: /https?:\/\/(localhost:3000|localhost:8000|localhost:9000|croshara-.*\.onrender\.com|.*\.vercel\.app)/
       - key: ADMIN_CORS
         value: /https?:\/\/.*croshara-medusa\.onrender\.com/
       - key: AUTH_CORS
