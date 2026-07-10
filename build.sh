@@ -25,3 +25,5 @@ else
 fi
 
 node node_modules/@medusajs/cli/cli.js db:migrate
+
+node node_modules/@medusajs/cli/cli.js exec src/scripts/seed.ts
