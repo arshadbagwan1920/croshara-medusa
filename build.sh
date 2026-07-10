@@ -12,3 +12,5 @@ printf '%s\n' 'export default {}' > node_modules/@medusajs/draft-order/.medusa/s
 printf '%s\n' 'module.exports = {}' > node_modules/@medusajs/draft-order/.medusa/server/src/admin/index.js
 
 node node_modules/@medusajs/cli/cli.js build
+
+node node_modules/@medusajs/cli/cli.js db:migrate
