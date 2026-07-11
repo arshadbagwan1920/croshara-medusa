@@ -12,7 +12,7 @@ services:
     env: node
     branch: main
     buildCommand: ./build.sh
-    startCommand: npm run start
+    startCommand: NODE_OPTIONS=--max-old-space-size=384 node node_modules/@medusajs/cli/cli.js start
     healthCheckPath: /health
     envVars:
       - key: DATABASE_URL

@@ -25,23 +25,21 @@ export default async function createAdmin({
     console.log(`[create-admin] User already exists: ${user.id}`)
   }
 
-  // 2. Find or create the auth identity.
-  //    authService.register() may return undefined in some Medusa v2 builds,
-  //    so we always look it up after the call.
+  // 2. Register auth identity for emailpass provider.
+  //    Medusa v2 emailpass expects { entity_id, password } at top level.
   let authIdentity: any
 
-  // Try registering (idempotent — duplicates are caught below).
   try {
     const result = await authService.register("emailpass", {
       entity_id: email,
-      provider_metadata: { password },
+      password: password,
     } as any)
-    console.log(`[create-admin] authService.register returned: ${JSON.stringify(result?.id || result)}`)
+    console.log(`[create-admin] register result: ${JSON.stringify(result?.id || result)}`)
   } catch (err: any) {
-    console.log(`[create-admin] authService.register error (will lookup): ${err?.message || err}`)
+    console.log(`[create-admin] register error: ${err?.message || err}`)
   }
 
-  // Now look it up — the identity should exist after register (or already existed).
+  // Always look up — register may not return the identity directly.
   const allIdentities = (await authService.listAuthIdentities(
     {} as any,
     { take: 1000 } as any,
@@ -51,21 +49,18 @@ export default async function createAdmin({
   if (authIdentity) {
     console.log(`[create-admin] Auth identity found: ${authIdentity.id}`)
   } else {
-    console.log(`[create-admin] WARNING: No auth identity found for ${email}`)
+    console.log(`[create-admin] WARNING: No auth identity for ${email}`)
+    console.log(`[create-admin] All identities: ${JSON.stringify(allIdentities?.map((a: any) => ({ id: a.id, entity_id: a.entity_id, provider: a.auth_provider })))}`)
   }
 
   // 3. Link user <-> auth identity.
-  //    Without this, /auth/admin/emailpass returns JWT with actor_id="" and
-  //    all /admin/* endpoints reject it with 401.
   if (authIdentity && user) {
     try {
       await link.create({
         [Modules.USER]: { user_id: user.id },
         [Modules.AUTH]: { auth_identity_id: authIdentity.id },
       } as any)
-      console.log(
-        `[create-admin] Linked auth ${authIdentity.id} -> user ${user.id}`,
-      )
+      console.log(`[create-admin] Linked auth ${authIdentity.id} -> user ${user.id}`)
     } catch (err: any) {
       if (
         err?.message?.includes("exists") ||
@@ -73,13 +68,9 @@ export default async function createAdmin({
         err?.message?.includes("unique") ||
         err?.code === "23505"
       ) {
-        console.log(
-          `[create-admin] Link already present (ok): ${user.id} <-> ${authIdentity.id}`,
-        )
+        console.log(`[create-admin] Link already present (ok): ${user.id} <-> ${authIdentity.id}`)
       } else {
-        console.log(
-          `[create-admin] link.create FAILED: ${err?.message || err}`,
-        )
+        console.log(`[create-admin] link.create FAILED: ${err?.message || err}`)
       }
     }
   }
