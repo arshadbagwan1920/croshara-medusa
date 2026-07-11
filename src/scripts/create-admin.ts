@@ -1,4 +1,3 @@
-import { IAuthModuleService, IUserModuleService } from "@medusajs/framework/types"
 import { ContainerRegistrationKeys, Modules } from "@medusajs/framework/utils"
 
 export default async function createAdmin({
@@ -6,9 +5,9 @@ export default async function createAdmin({
 }: {
   container: { resolve: <T>(name: string) => T }
 }) {
-  const authService = container.resolve<IAuthModuleService>(Modules.AUTH)
-  const userService = container.resolve<IUserModuleService>(Modules.USER)
-  const link = container.resolve(ContainerRegistrationKeys.LINK)
+  const authService = container.resolve<any>(Modules.AUTH)
+  const userService = container.resolve<any>(Modules.USER)
+  const link = container.resolve<any>(ContainerRegistrationKeys.LINK)
 
   const email = "admin@croshara.com"
   const password = "croshara123"
@@ -43,7 +42,7 @@ export default async function createAdmin({
       authIdentity = await authService.register("emailpass", {
         entity_id: email,
         provider_metadata: { password },
-      })
+      } as any)
       console.log(
         `[create-admin] Auth identity registered: ${authIdentity.id}`,
       )

@@ -1,4 +1,3 @@
-import { IApiKeyModuleService } from "@medusajs/framework/types"
 import { Modules } from "@medusajs/framework/utils"
 import { writeFileSync, mkdirSync, existsSync } from "fs"
 import { join } from "path"
@@ -8,7 +7,7 @@ export default async function createApiKey({
 }: {
   container: { resolve: <T>(name: string) => T }
 }) {
-  const apiKeyService = container.resolve<IApiKeyModuleService>(Modules.API_KEY)
+  const apiKeyService = container.resolve<any>(Modules.API_KEY)
 
   // Look up the existing "Storefront" publishable key (idempotent).
   const existing = (await apiKeyService.listApiKeys({

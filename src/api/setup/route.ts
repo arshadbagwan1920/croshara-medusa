@@ -1,5 +1,4 @@
 import { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
-import { IApiKeyModuleService, IAuthModuleService, IUserModuleService } from "@medusajs/framework/types"
 import { Modules } from "@medusajs/framework/utils"
 import { readFileSync, existsSync } from "fs"
 import { join } from "path"
@@ -8,10 +7,10 @@ import { join } from "path"
 // plus admin-user bootstrap status. This route is intentionally unauthenticated
 // because publishable API keys only grant store-API access, never admin.
 export async function GET(req: MedusaRequest, res: MedusaResponse) {
-  const container = req.scope as unknown as { resolve: <T>(name: string) => T }
-  const apiKeyService = container.resolve<IApiKeyModuleService>(Modules.API_KEY)
-  const userService = container.resolve<IUserModuleService>(Modules.USER)
-  const authService = container.resolve<IAuthModuleService>(Modules.AUTH)
+  const container = req.scope as any
+  const apiKeyService = container.resolve(Modules.API_KEY)
+  const userService = container.resolve(Modules.USER)
+  const authService = container.resolve(Modules.AUTH)
 
   let publishableKey: string | undefined
   let adminEmail: string | undefined
