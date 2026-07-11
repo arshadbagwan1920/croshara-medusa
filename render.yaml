@@ -33,3 +33,5 @@ services:
         value: https://croshara-medusa.onrender.com
       - key: NODE_ENV
         value: production
+      - key: NODE_OPTIONS
+        value: --max-old-space-size=400

@@ -12,7 +12,7 @@ export default async function createAdmin({
   const email = "admin@croshara.com"
   const password = "croshara123"
 
-  // Find or create the user record.
+  // 1. Find or create the user record.
   let [user] = (await userService.listUsers({ email } as any)) as any[]
   if (!user) {
     user = await userService.createUsers({
@@ -25,44 +25,39 @@ export default async function createAdmin({
     console.log(`[create-admin] User already exists: ${user.id}`)
   }
 
-  // Find or create the auth identity for this email.
+  // 2. Find or create the auth identity.
+  //    authService.register() may return undefined in some Medusa v2 builds,
+  //    so we always look it up after the call.
   let authIdentity: any
-  const existingAuth = (await authService.listAuthIdentities(
+
+  // Try registering (idempotent — duplicates are caught below).
+  try {
+    const result = await authService.register("emailpass", {
+      entity_id: email,
+      provider_metadata: { password },
+    } as any)
+    console.log(`[create-admin] authService.register returned: ${JSON.stringify(result?.id || result)}`)
+  } catch (err: any) {
+    console.log(`[create-admin] authService.register error (will lookup): ${err?.message || err}`)
+  }
+
+  // Now look it up — the identity should exist after register (or already existed).
+  const allIdentities = (await authService.listAuthIdentities(
     {} as any,
     { take: 1000 } as any,
   )) as any[]
-  const match = existingAuth?.find((a: any) => a.entity_id === email)
-  if (match) {
-    authIdentity = match
-    console.log(
-      `[create-admin] Auth identity already exists: ${authIdentity.id}`,
-    )
+  authIdentity = allIdentities?.find((a: any) => a.entity_id === email) || null
+
+  if (authIdentity) {
+    console.log(`[create-admin] Auth identity found: ${authIdentity.id}`)
   } else {
-    try {
-      authIdentity = await authService.register("emailpass", {
-        entity_id: email,
-        provider_metadata: { password },
-      } as any)
-      console.log(
-        `[create-admin] Auth identity registered: ${authIdentity.id}`,
-      )
-    } catch (err: any) {
-      console.log(
-        `[create-admin] authService.register failed (continuing with lookup): ${err?.message || err}`,
-      )
-      const retry = (await authService.listAuthIdentities(
-        {} as any,
-        { take: 1000 } as any,
-      )) as any[]
-      authIdentity = retry?.find((a: any) => a.entity_id === email) || null
-    }
+    console.log(`[create-admin] WARNING: No auth identity found for ${email}`)
   }
 
-  // ALWAYS link them. The link call is idempotent — if a link already exists
-  // Medusa returns it without error, but newly-created sides must be linked
-  // for /admin endpoints to accept the auth identity's JWT (otherwise the
-  // token arrives with actor_id="" and admin middleware rejects it).
-  if (authIdentity) {
+  // 3. Link user <-> auth identity.
+  //    Without this, /auth/admin/emailpass returns JWT with actor_id="" and
+  //    all /admin/* endpoints reject it with 401.
+  if (authIdentity && user) {
     try {
       await link.create({
         [Modules.USER]: { user_id: user.id },
@@ -72,19 +67,18 @@ export default async function createAdmin({
         `[create-admin] Linked auth ${authIdentity.id} -> user ${user.id}`,
       )
     } catch (err: any) {
-      // Idempotent — if link already exists, Medusa throws ConnectorError
-      // E11000 (duplicate key); safe to swallow.
       if (
         err?.message?.includes("exists") ||
         err?.message?.includes("duplicate") ||
-        err?.message?.includes("unique")
+        err?.message?.includes("unique") ||
+        err?.code === "23505"
       ) {
         console.log(
           `[create-admin] Link already present (ok): ${user.id} <-> ${authIdentity.id}`,
         )
       } else {
         console.log(
-          `[create-admin] link.create failed: ${err?.message || err}`,
+          `[create-admin] link.create FAILED: ${err?.message || err}`,
         )
       }
     }
