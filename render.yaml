@@ -12,7 +12,7 @@ services:
     env: node
     branch: main
     buildCommand: ./build.sh
-    startCommand: NODE_OPTIONS=--max-old-space-size=384 node node_modules/@medusajs/cli/cli.js start
+    startCommand: NODE_OPTIONS="--max-old-space-size=350 --max-semi-space-size=64" node node_modules/@medusajs/cli/cli.js start
     healthCheckPath: /health
     envVars:
       - key: DATABASE_URL
@@ -33,5 +33,5 @@ services:
         value: https://croshara-medusa.onrender.com
       - key: NODE_ENV
         value: production
-      - key: NODE_OPTIONS
-        value: --max-old-space-size=400
+      - key: MALLOC_ARENA_MAX
+        value: "2"

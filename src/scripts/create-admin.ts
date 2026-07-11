@@ -26,17 +26,17 @@ export default async function createAdmin({
   }
 
   // 2. Register auth identity for emailpass provider.
-  //    Medusa v2 emailpass expects { entity_id, password } at top level.
-  let authIdentity: any
+  //    Medusa v2 emailpass register() reads userData.body.email + userData.body.password.
+  //    The HTTP route wraps req.body, so we pass { body: { email, password } }.
+  let authIdentity: any = null
 
   try {
     const result = await authService.register("emailpass", {
-      entity_id: email,
-      password: password,
+      body: { email, password },
     } as any)
     console.log(`[create-admin] register result: ${JSON.stringify(result?.id || result)}`)
   } catch (err: any) {
-    console.log(`[create-admin] register error: ${err?.message || err}`)
+    console.log(`[create-admin] register threw: ${err?.message || err}`)
   }
 
   // Always look up — register may not return the identity directly.
@@ -50,7 +50,7 @@ export default async function createAdmin({
     console.log(`[create-admin] Auth identity found: ${authIdentity.id}`)
   } else {
     console.log(`[create-admin] WARNING: No auth identity for ${email}`)
-    console.log(`[create-admin] All identities: ${JSON.stringify(allIdentities?.map((a: any) => ({ id: a.id, entity_id: a.entity_id, provider: a.auth_provider })))}`)
+    console.log(`[create-admin] All identities: ${JSON.stringify(allIdentities?.map((a: any) => ({ id: a.id, entity_id: a.entity_id })))}`)
   }
 
   // 3. Link user <-> auth identity.
