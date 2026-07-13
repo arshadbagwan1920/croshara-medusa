@@ -41,6 +41,7 @@ export default async function seed({ container }: any) {
   const regionService = container.resolve("region")
   const scService = container.resolve("sales_channel")
   const apiKeyService = container.resolve("api_key")
+  const pg: any = container.resolve("__pg_connection__")
 
   // 1. Create India region
   let regions = await regionService.listRegions({})
@@ -118,8 +119,8 @@ export default async function seed({ container }: any) {
     const existing = await productService.listProducts({ handle: p.handle })
     if (existing && existing.length > 0) {
       const prod = existing[0]
-      const channels = await scService.listSalesChannelsForProducts(prod.id)
-      const alreadyLinked = channels?.length > 0
+      const linkRow = await pg("product_sales_channel").where({ product_id: prod.id }).first()
+      const alreadyLinked = Boolean(linkRow)
       if (!alreadyLinked) {
         await scService.linkProducts(defaultSC.id, [prod.id])
         console.log(`Linked ${p.handle} to sales channel`)
