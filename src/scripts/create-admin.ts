@@ -1,19 +1,12 @@
-import { ContainerRegistrationKeys, Modules } from "@medusajs/framework/utils"
-
-export default async function createAdmin({
-  container,
-}: {
-  container: { resolve: <T>(name: string) => T }
-}) {
-  const authService = container.resolve<any>(Modules.AUTH)
-  const userService = container.resolve<any>(Modules.USER)
-  const link = container.resolve<any>(ContainerRegistrationKeys.LINK)
+export default async function createAdmin({ container }: any) {
+  const authService = container.resolve("auth")
+  const userService = container.resolve("user")
+  const link = container.resolve("link")
 
   const email = "admin@croshara.com"
   const password = "croshara123"
 
-  // 1. Find or create the user record.
-  let [user] = (await userService.listUsers({ email } as any)) as any[]
+  let [user] = (await userService.listUsers({ email })) as any[]
   if (!user) {
     user = await userService.createUsers({
       email,
@@ -25,24 +18,20 @@ export default async function createAdmin({
     console.log(`[create-admin] User already exists: ${user.id}`)
   }
 
-  // 2. Register auth identity for emailpass provider.
-  //    Medusa v2 emailpass register() reads userData.body.email + userData.body.password.
-  //    The HTTP route wraps req.body, so we pass { body: { email, password } }.
   let authIdentity: any = null
 
   try {
     const result = await authService.register("emailpass", {
       body: { email, password },
-    } as any)
+    })
     console.log(`[create-admin] register result: ${JSON.stringify(result?.id || result)}`)
   } catch (err: any) {
     console.log(`[create-admin] register threw: ${err?.message || err}`)
   }
 
-  // Always look up — register may not return the identity directly.
   const allIdentities = (await authService.listAuthIdentities(
-    {} as any,
-    { take: 1000 } as any,
+    {},
+    { take: 1000 },
   )) as any[]
   authIdentity = allIdentities?.find((a: any) => a.entity_id === email) || null
 
@@ -53,13 +42,12 @@ export default async function createAdmin({
     console.log(`[create-admin] All identities: ${JSON.stringify(allIdentities?.map((a: any) => ({ id: a.id, entity_id: a.entity_id })))}`)
   }
 
-  // 3. Link user <-> auth identity.
   if (authIdentity && user) {
     try {
       await link.create({
-        [Modules.USER]: { user_id: user.id },
-        [Modules.AUTH]: { auth_identity_id: authIdentity.id },
-      } as any)
+        user: { user_id: user.id },
+        auth: { auth_identity_id: authIdentity.id },
+      })
       console.log(`[create-admin] Linked auth ${authIdentity.id} -> user ${user.id}`)
     } catch (err: any) {
       if (
