@@ -1,6 +1,9 @@
 #!/bin/bash
 set -e
 
+# Prevent OOM on Render free tier (512MB)
+export NODE_OPTIONS="--max-old-space-size=384"
+
 NODE_ENV=development npm install
 
 # @medusajs/medusa lists draft-order as a dep, but its admin bundle uses
