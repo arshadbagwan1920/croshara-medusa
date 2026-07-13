@@ -11,7 +11,7 @@ services:
     region: singapore
     env: node
     branch: main
-    buildCommand: ./build.sh
+    buildCommand: bash build.sh
     startCommand: NODE_OPTIONS="--max-old-space-size=350 --max-semi-space-size=64" node node_modules/@medusajs/cli/cli.js start
     healthCheckPath: /health
     envVars:
