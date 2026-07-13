@@ -48,16 +48,15 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
   }
 
   try {
-    const authIdentities = (await authService.listAuthIdentities({}, { take: 1000 })) as any[]
-    const targetEmail = "admin@croshara.com"
-    const emailMatches = (authIdentities || []).filter(
-      (a: any) => a.entity_id === targetEmail,
-    )
-    if (emailMatches.length > 0 && adminUserId) {
+    const pg: any = container.resolve("__pg_connection__")
+    const row = await pg("provider_identity")
+      .where({ entity_id: "admin@croshara.com", provider: "emailpass" })
+      .first()
+    if (row && adminUserId) {
       adminLinked = true
     }
   } catch (err: any) {
-    console.warn("[/setup] listAuthIdentities failed:", err?.message || err)
+    console.warn("[/setup] provider_identity lookup failed:", err?.message || err)
   }
 
   res.json({
