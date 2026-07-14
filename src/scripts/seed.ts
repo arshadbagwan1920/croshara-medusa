@@ -122,7 +122,7 @@ export default async function seed({ container }: any) {
       const linkRow = await pg("product_sales_channel").where({ product_id: prod.id }).first()
       const alreadyLinked = Boolean(linkRow)
       if (!alreadyLinked) {
-        await scService.linkProducts(defaultSC.id, [prod.id])
+        await pg("product_sales_channel").insert({ product_id: prod.id, sales_channel_id: defaultSC.id })
         console.log(`Linked ${p.handle} to sales channel`)
       }
     }
